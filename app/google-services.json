@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "914630989165",
+    "firebase_url": "https://stylehub-a1d60-default-rtdb.firebaseio.com",
+    "project_id": "stylehub-a1d60",
+    "storage_bucket": "stylehub-a1d60.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:914630989165:android:92e9dec9058e3cb86d7664",
+        "android_client_info": {
+          "package_name": "com.app.shopify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIHl2eoqm-AytkxfPiA-jZORkhQH6APUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:914630989165:android:2cf3d79635fa741d6d7664",
+        "android_client_info": {
+          "package_name": "com.app.shopifybusiness"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIHl2eoqm-AytkxfPiA-jZORkhQH6APUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:914630989165:android:ef98012820da00196d7664",
+        "android_client_info": {
+          "package_name": "com.app.stylehub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIHl2eoqm-AytkxfPiA-jZORkhQH6APUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
