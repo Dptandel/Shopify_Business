@@ -46,8 +46,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -55,6 +55,11 @@ dependencies {
     // Color picker
     implementation (libs.colorpickerview)
 
+    // Lifecycle
+    implementation (libs.androidx.lifecycle.runtime.ktx)
+
     // Coroutine for firebase
     implementation(libs.kotlinx.coroutines.play.services)
+
+    implementation (libs.play.services.auth)
 }
