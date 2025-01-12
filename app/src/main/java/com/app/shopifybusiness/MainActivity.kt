@@ -110,26 +110,20 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Check your product details!!!", Toast.LENGTH_SHORT).show()
                 return false
             }
-            saveProduct() {
-                Log.d("ERROR", it.toString())
+            saveProduct { success ->
+                if (!success) {
+                    Log.d("ERROR", "Product save failed!")
+                }
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun validateProduct(): Boolean {
-        if (binding.edtPrice.text.toString().trim().isEmpty()) {
-            return false
-        }
-        if (binding.edtName.text.toString().trim().isEmpty()) {
-            return false
-        }
-        if (binding.edtCategory.text.toString().trim().isEmpty()) {
-            return false
-        }
-        if (selectedImages.isEmpty()) {
-            return false
-        }
+        if (binding.edtPrice.text.toString().trim().isEmpty()) return false
+        if (binding.edtName.text.toString().trim().isEmpty()) return false
+        if (binding.edtCategory.text.toString().trim().isEmpty()) return false
+        if (selectedImages.isEmpty()) return false
         return true
     }
 
@@ -140,7 +134,6 @@ class MainActivity : AppCompatActivity() {
         val offerPercentage = binding.edtOfferPercentage.text.toString().trim()
         val description = binding.edtDescription.text.toString().trim()
         val sizes = getSizesList(binding.edtSizes.text.toString().trim())
-        val imagesByteArrays = getImagesByteArrays()
         val images = mutableListOf<String>()
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -151,23 +144,30 @@ class MainActivity : AppCompatActivity() {
                 val uploadJobs = mutableListOf<Job>()
                 selectedImages.forEach { uri ->
                     val uploadJob = launch {
-                        val id = UUID.randomUUID().toString()
-                        val imageStorage = productStorage.child("products/images/$id")
-                        val byteArray = getBitmapByteArray(uri)
                         try {
+                            val id = UUID.randomUUID().toString()
+                            val imageStorage = productStorage.child("products/images/$id")
+                            val byteArray = getBitmapByteArray(uri)
+                            Log.d("TAG", "Image ByteArray size: ${byteArray.size}")
+
                             val result = imageStorage.putBytes(byteArray).await()
                             val downloadUrl = result.storage.downloadUrl.await().toString()
                             images.add(downloadUrl)
+                            Log.d("TAG", "Image uploaded: $downloadUrl")
                         } catch (e: Exception) {
                             Log.e("ImageUpload", "Error uploading image: $uri", e)
                         }
                     }
                     uploadJobs.add(uploadJob)
                 }
-                // Wait for all uploads to finish
                 uploadJobs.joinAll()
 
-                // After all uploads are complete, create the product and add to Firestore
+                // Log final data before saving
+                Log.d(
+                    "TAG",
+                    "Product Data: Name=$name, Category=$category, Price=$price, Colors=$selectedColors, Images=$images"
+                )
+
                 val product = Product(
                     id = UUID.randomUUID().toString(),
                     name = name,
@@ -181,16 +181,24 @@ class MainActivity : AppCompatActivity() {
                 )
 
                 firestore.collection("products").add(product).addOnSuccessListener {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Product uploaded successfully!!!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Product uploaded successfully!!!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        clearFields()
+                    }
                     state(true)
                     hideLoading()
                 }.addOnFailureListener {
-                    Toast.makeText(this@MainActivity, "Something went wrong!!!", Toast.LENGTH_SHORT)
-                        .show()
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Something went wrong!!!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                     state(false)
                     hideLoading()
                     Log.e("ERROR", it.message.toString())
@@ -205,24 +213,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun clearFields() {
+        binding.edtName.text.clear()
+        binding.edtCategory.text.clear()
+        binding.edtPrice.text.clear()
+        binding.edtOfferPercentage.text.clear()
+        binding.edtDescription.text.clear()
+        binding.edtSizes.text.clear()
+        selectedImages.clear()
+        selectedColors.clear()
+        updateImages()
+        updateColors()
+    }
+
     private fun hideLoading() {
         binding.progressBar.visibility = View.INVISIBLE
     }
 
     private fun showLoading() {
         binding.progressBar.visibility = View.VISIBLE
-    }
-
-    private fun getImagesByteArrays(): List<ByteArray> {
-        val imagesByteArray = mutableListOf<ByteArray>()
-        selectedImages.forEach {
-            val stream = ByteArrayOutputStream()
-            val imageBmp = MediaStore.Images.Media.getBitmap(contentResolver, it)
-            if (imageBmp.compress(Bitmap.CompressFormat.JPEG, 100, stream)) {
-                imagesByteArray.add(stream.toByteArray())
-            }
-        }
-        return imagesByteArray
     }
 
     private fun getBitmapByteArray(uri: Uri): ByteArray {
@@ -235,11 +245,8 @@ class MainActivity : AppCompatActivity() {
         return stream.toByteArray()
     }
 
-    // S, M, L, XL, XXL
     private fun getSizesList(sizesStr: String): List<String>? {
-        if (sizesStr.isEmpty()) {
-            return null
-        }
+        if (sizesStr.isEmpty()) return null
         val sizes = sizesStr.split(",")
         return sizes.map { it.trim() }
     }
